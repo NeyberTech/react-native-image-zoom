@@ -1,4 +1,3 @@
-import React from 'react';
 import { GestureResponderEvent, PanResponderGestureState, LayoutChangeEvent, ViewStyle } from 'react-native';
 
 export interface ICenterOn {

@@ -1,3 +1,4 @@
+import React from 'react';
 import { GestureResponderEvent, PanResponderGestureState, LayoutChangeEvent, ViewStyle } from 'react-native';
 
 export interface ICenterOn {
@@ -121,6 +122,8 @@ export class ImageZoomProps {
    * Whether to use native code to perform animations.
    */
   public useNativeDriver?: boolean = false;
+
+  children?: React.ReactNode;
 
   /**
    * 单击的回调

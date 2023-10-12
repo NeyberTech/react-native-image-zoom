@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -69,6 +71,10 @@ var ImageViewer = /** @class */ (function (_super) {
         _this.isLongPress = false;
         // 是否在左右滑
         _this.isHorizontalWrap = false;
+        // 是否待卸载
+        _this.willUnmount = false;
+        // 是否处于手势状态中
+        _this.hasResponder = false;
         // 图片手势处理
         _this.imagePanResponder = react_native_1.PanResponder.create({
             // 要求成为响应者：
@@ -77,6 +83,7 @@ var ImageViewer = /** @class */ (function (_super) {
             onMoveShouldSetPanResponder: _this.props.onMoveShouldSetPanResponder,
             onPanResponderGrant: function (evt) {
                 // 开始手势操作
+                _this.hasResponder = true;
                 _this.lastPositionX = null;
                 _this.lastPositionY = null;
                 _this.zoomLastDistance = null;
@@ -103,6 +110,9 @@ var ImageViewer = /** @class */ (function (_super) {
                 var _a = evt.nativeEvent, locationX = _a.locationX, locationY = _a.locationY, pageX = _a.pageX, pageY = _a.pageY;
                 _this.longPressTimeout = setTimeout(function () {
                     _this.isLongPress = true;
+                    if (_this.willUnmount || !_this.hasResponder) {
+                        return;
+                    }
                     if (_this.props.onLongPress) {
                         _this.props.onLongPress({ locationX: locationX, locationY: locationY, pageX: pageX, pageY: pageY });
                     }
@@ -396,6 +406,7 @@ var ImageViewer = /** @class */ (function (_super) {
                 _this.imageDidMove('onPanResponderMove');
             },
             onPanResponderRelease: function (evt, gestureState) {
+                _this.hasResponder = false;
                 // 取消长按
                 if (_this.longPressTimeout) {
                     clearTimeout(_this.longPressTimeout);
@@ -429,6 +440,7 @@ var ImageViewer = /** @class */ (function (_super) {
             },
             onPanResponderTerminate: function () {
                 //
+                _this.hasResponder = false;
             },
         });
         _this.resetScale = function () {
@@ -535,6 +547,9 @@ var ImageViewer = /** @class */ (function (_super) {
             this.centerOn(this.props.centerOn);
         }
     };
+    ImageViewer.prototype.componentWillUnmount = function () {
+        this.willUnmount = true;
+    };
     ImageViewer.prototype.componentDidUpdate = function (prevProps) {
         // Either centerOn has never been called, or it is a repeat and we should ignore it
         if ((this.props.centerOn && !prevProps.centerOn) ||
@@ -619,9 +634,9 @@ var ImageViewer = /** @class */ (function (_super) {
         return (<react_native_1.View style={__assign(__assign(__assign({}, image_zoom_style_1.default.container), parentStyles), { width: this.props.cropWidth, height: this.props.cropHeight })} {...this.imagePanResponder.panHandlers}>
         <react_native_1.Animated.View style={animateConf} renderToHardwareTextureAndroid={this.props.useHardwareTextureAndroid}>
           <react_native_1.View onLayout={this.handleLayout.bind(this)} style={{
-            width: this.props.imageWidth,
-            height: this.props.imageHeight,
-        }}>
+                width: this.props.imageWidth,
+                height: this.props.imageHeight,
+            }}>
             {this.props.children}
           </react_native_1.View>
         </react_native_1.Animated.View>

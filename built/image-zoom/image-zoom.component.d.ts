@@ -29,10 +29,13 @@ export default class ImageViewer extends React.Component<ImageZoomProps, ImageZo
     private isDoubleClick;
     private isLongPress;
     private isHorizontalWrap;
+    private willUnmount;
+    private hasResponder;
     private imagePanResponder;
     resetScale: () => void;
     panResponderReleaseResolve: () => void;
     componentDidMount(): void;
+    componentWillUnmount(): void;
     componentDidUpdate(prevProps: ImageZoomProps): void;
     imageDidMove(type: string): void;
     didCenterOnChange(params: {

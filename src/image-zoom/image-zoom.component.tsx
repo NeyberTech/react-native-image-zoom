@@ -62,6 +62,12 @@ export default class ImageViewer extends React.Component<ImageZoomProps, ImageZo
   // 是否在左右滑
   private isHorizontalWrap = false;
 
+  // 是否待卸载
+  private willUnmount = false;
+
+  // 是否处于手势状态中
+  private hasResponder = false;
+
   // 图片手势处理
   private imagePanResponder = PanResponder.create({
     // 要求成为响应者：
@@ -71,6 +77,7 @@ export default class ImageViewer extends React.Component<ImageZoomProps, ImageZo
 
     onPanResponderGrant: (evt) => {
       // 开始手势操作
+      this.hasResponder = true;
       this.lastPositionX = null;
       this.lastPositionY = null;
       this.zoomLastDistance = null;
@@ -101,6 +108,9 @@ export default class ImageViewer extends React.Component<ImageZoomProps, ImageZo
       const { locationX, locationY, pageX, pageY } = evt.nativeEvent;
       this.longPressTimeout = setTimeout(() => {
         this.isLongPress = true;
+        if (this.willUnmount || !this.hasResponder) {
+          return;
+        }
         if (this.props.onLongPress) {
           this.props.onLongPress({ locationX, locationY, pageX, pageY });
         }
@@ -418,6 +428,7 @@ export default class ImageViewer extends React.Component<ImageZoomProps, ImageZo
       this.imageDidMove('onPanResponderMove');
     },
     onPanResponderRelease: (evt, gestureState) => {
+      this.hasResponder = false;
       // 取消长按
       if (this.longPressTimeout) {
         clearTimeout(this.longPressTimeout);
@@ -455,6 +466,7 @@ export default class ImageViewer extends React.Component<ImageZoomProps, ImageZo
     },
     onPanResponderTerminate: () => {
       //
+      this.hasResponder = false;
     },
   });
 
@@ -568,6 +580,10 @@ export default class ImageViewer extends React.Component<ImageZoomProps, ImageZo
     if (this.props.centerOn) {
       this.centerOn(this.props.centerOn);
     }
+  }
+
+  public componentWillUnmount(): void {
+    this.willUnmount = true;
   }
 
   public componentDidUpdate(prevProps: ImageZoomProps): void {
